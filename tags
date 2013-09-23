@@ -1,0 +1,71 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CommandlineError	lib/trollop.rb	/^class CommandlineError < StandardError; end$/;"	c	class:Trollop
+HelpNeeded	lib/trollop.rb	/^class HelpNeeded < StandardError; end$/;"	c	class:Trollop
+Importer	lib/worker.rb	/^class Importer  #{{{1$/;"	c
+MyStudy	lib/section.rb	/^class MyStudy  #{{{1$/;"	c
+Parser	lib/trollop.rb	/^class Parser$/;"	c	class:Trollop
+Trollop	lib/trollop.rb	/^module Trollop$/;"	m
+VersionNeeded	lib/trollop.rb	/^class VersionNeeded < StandardError; end$/;"	c	class:Trollop
+_build_dd_matrix	lib/section.rb	/^  def _build_dd_matrix(dd_id)  #{{{2$/;"	f	class:MyStudy
+_build_dd_matrix_checkbox	lib/section.rb	/^  def _build_dd_matrix_checkbox(dd_id)  #{{{2$/;"	f	class:MyStudy
+_build_dd_matrix_radio	lib/section.rb	/^  def _build_dd_matrix_radio(dd_id)  #{{{2$/;"	f	class:MyStudy
+_build_dd_one_column	lib/section.rb	/^  def _build_dd_one_column(dd_id)  #{{{2$/;"	f	class:MyStudy
+_build_dd_text	lib/section.rb	/^  def _build_dd_text(dd_id)  #{{{2$/;"	f	class:MyStudy
+_find_choice_dd	lib/worker.rb	/^  def _find_choice_dd(info)$/;"	f	class:Importer
+_print_dd_csv	lib/section.rb	/^  def _print_dd_csv(dd_id, dddp)  #{{{2$/;"	f	class:MyStudy
+_process_arm_for_study	lib/worker.rb	/^  def _process_arm_for_study(row_info)$/;"	f	class:Importer
+banner	lib/trollop.rb	/^  def banner s; @order << [:text, s] end$/;"	f
+cloaker	lib/trollop.rb	/^  def cloaker &b$/;"	f
+collect_argument_parameters	lib/trollop.rb	/^  def collect_argument_parameters args, start_at$/;"	f
+common_info	lib/section.rb	/^  def common_info  #{{{2$/;"	f	class:MyStudy
+conflicts	lib/trollop.rb	/^  def conflicts *syms$/;"	f
+critical	main.rb	/^def critical(err)$/;"	f
+depends	lib/trollop.rb	/^  def depends *syms$/;"	f
+design_detail_info	lib/section.rb	/^  def design_detail_info(dd_id)  #{{{2$/;"	f	class:MyStudy
+die	lib/trollop.rb	/^  def die arg, msg$/;"	f
+die	lib/trollop.rb	/^def die arg, msg=nil$/;"	f
+each_arg	lib/trollop.rb	/^  def each_arg args$/;"	f
+educate	lib/trollop.rb	/^  def educate stream=$stdout$/;"	f
+find_dddp	lib/section.rb	/^  def find_dddp(dd_id, listOf_ddf)$/;"	f	class:MyStudy
+find_dddp_matrix	lib/section.rb	/^  def find_dddp_matrix(dd_id, ddf_rows, ddf_cols)$/;"	f	class:MyStudy
+find_dddp_matrix_checkbox	lib/section.rb	/^  def find_dddp_matrix_checkbox(dd_id, ddf_rows, ddf_cols)  #{{{2$/;"	f	class:MyStudy
+find_dddp_matrix_radio	lib/section.rb	/^  def find_dddp_matrix_radio(dd_id, ddf_rows, ddf_cols)$/;"	f	class:MyStudy
+get_extraction_form_ids	main.rb	/^def get_extraction_form_ids(project_id)$/;"	f
+get_listOfStudyIDs_by_efIDs	main.rb	/^def get_listOfStudyIDs_by_efIDs(ef_id)$/;"	f
+get_listOfddIDs	lib/section.rb	/^  def get_listOfddIDs  #{{{2$/;"	f	class:MyStudy
+get_listOfkqIDs	lib/section.rb	/^  def get_listOfkqIDs  #{{{2$/;"	f	class:MyStudy
+get_project_info	main.rb	/^def get_project_info(project_id)$/;"	f
+initialize	lib/section.rb	/^  def initialize(project_id, project_info, ef_id, study_id)  #{{{2$/;"	f	class:MyStudy
+initialize	lib/trollop.rb	/^  def initialize *a, &b$/;"	f	class:Trollop.Parser
+initialize	lib/worker.rb	/^  def initialize(file)  #{{{2$/;"	f	class:Importer
+key_question_info	lib/section.rb	/^  def key_question_info(kq_id)  #{{{2$/;"	f	class:MyStudy
+load_rails_environment	lib/environment.rb	/^def load_rails_environment$/;"	f
+main	lib/worker.rb	/^  def main  #{{{2$/;"	f	class:Importer
+method_missing	lib/trollop.rb	/^      def method_missing(m, *args)$/;"	f
+opt	lib/trollop.rb	/^  def opt name, desc="", opts={}$/;"	f	class:Trollop.Parser
+options	lib/trollop.rb	/^def options args=ARGV, *a, &b$/;"	f
+parse	lib/trollop.rb	/^  def parse cmdline=ARGV$/;"	f
+parse_date_parameter	lib/trollop.rb	/^  def parse_date_parameter param, arg #:nodoc:$/;"	f
+parse_float_parameter	lib/trollop.rb	/^  def parse_float_parameter param, arg$/;"	f
+parse_integer_parameter	lib/trollop.rb	/^  def parse_integer_parameter param, arg$/;"	f
+parse_io_parameter	lib/trollop.rb	/^  def parse_io_parameter param, arg$/;"	f
+print_main	lib/section.rb	/^  def print_main  #{{{2$/;"	f	class:MyStudy
+process_arms	lib/worker.rb	/^  def process_arms  #{{{2$/;"	f	class:Importer
+process_design_details	lib/worker.rb	/^  def process_design_details  #{{{2$/;"	f	class:Importer
+publication_info	lib/section.rb	/^  def publication_info  #{{{2$/;"	f	class:MyStudy
+resolve_default_short_options!	lib/trollop.rb	/^  def resolve_default_short_options!$/;"	f	class:collect_argument_parameters
+sort	lib/worker.rb	/^  def sort  #{{{2$/;"	f	class:Importer
+stop_on	lib/trollop.rb	/^  def stop_on *words$/;"	f
+stop_on_unknown	lib/trollop.rb	/^  def stop_on_unknown$/;"	f
+validate_arg_list	main.rb	/^def validate_arg_list(opts)$/;"	f
+version	lib/trollop.rb	/^  def version s=nil; @version = s if s; @version end$/;"	f
+width	lib/trollop.rb	/^  def width #:nodoc:$/;"	f
+with_standard_exception_handling	lib/trollop.rb	/^def with_standard_exception_handling parser$/;"	f
+wrap	lib/trollop.rb	/^  def wrap str, opts={} # :nodoc:$/;"	f
+wrap_line	lib/trollop.rb	/^  def wrap_line str, opts={}$/;"	f	class:collect_argument_parameters
+write_to_db	lib/worker.rb	/^  def write_to_db(info)  #{{{2$/;"	f	class:Importer
