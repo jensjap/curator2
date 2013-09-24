@@ -121,7 +121,7 @@ class MyStudy  #{{{1
   end
 
   def _build_dd_text(dd_id)  #{{{2
-    dddp = DesignDetailDataPoint.find_by_design_detail_field_id_and_study_id(dd_id, @study_id)
+    dddp = DesignDetailDataPoint.find_by_design_detail_field_id_and_study_id_and_extraction_form_id(dd_id, @study_id, @ef_id)
 
     if dddp.blank?
       dddp = DesignDetailDataPoint.create(design_detail_field_id: dd_id,
