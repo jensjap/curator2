@@ -39,8 +39,6 @@ class Importer  #{{{1
   end
 
   def process_arms  #{{{2
-    
-
     @arm.each do |a|
       row_info = Hash.new
 
@@ -55,7 +53,7 @@ class Importer  #{{{1
     end
   end
 
-  def _process_arm_for_study(row_info)
+  def _process_arm_for_study(row_info)  #{{{2
     arm = Arm.find(:first, :conditions => { :study_id           => row_info[:study_id],
                                             :title              => row_info[:arm_title],
                                             :extraction_form_id => row_info[:ef_id] })
@@ -91,7 +89,7 @@ class Importer  #{{{1
     end
   end
 
-  def _find_choice_dd(info)
+  def _find_choice_dd(info)  #{{{2
     params = {:design_detail_id       => info[:dd_id],
               :value                  => "%#{info[:datapoint_value]}%",
               :study_id               => info[:study_id],
@@ -105,26 +103,35 @@ class Importer  #{{{1
   end
 
   def write_to_db(info)  #{{{2
+    params = {:design_detail_id       => info[:dd_id],
+              :value                  => "%#{info[:datapoint_value]}%",
+              :study_id               => info[:study_id],
+              :extraction_form_id     => info[:ef_id],
+              :row_field_id           => info[:row_field_id],
+              :column_field_id        => info[:column_field_id],
+              :arm_id                 => info[:arm_id],
+              :outcome_id             => info[:outcome_id]}
+
     if info[:datapoint_ID].blank?
-      dp = "#{info[:section]}DataPoint".constantize.find(:first, :conditions => { :design_detail_field_id => info[:dd_id],
-                                                                                  :value                  => info[:datapoint_value],
-                                                                                  :study_id               => info[:study_id],
-                                                                                  :extraction_form_id     => info[:ef_id],
-                                                                                  :row_field_id           => info[:row_field_id],
-                                                                                  :column_field_id        => info[:column_field_id],
-                                                                                  :arm_id                 => info[:arm_id],
-                                                                                  :outcome_id             => info[:outcome_id] })
-      if dp.blank?
-        "#{info[:section]}DataPoint".constantize.create(design_detail_field_id: info[:dd_id],
-                                                        value:                  info[:datapoint_value],
-                                                        notes:                  info[:notes],
-                                                        study_id:               info[:study_id],
-                                                        extraction_form_id:     info[:ef_id],
-                                                        subquestion_value:      info[:subquestion_value],
-                                                        row_field_id:           info[:row_field_id],
-                                                        column_field_id:        info[:column_field_id],
-                                                        arm_id:                 info[:arm_id],
-                                                        outcome_id:             info[:outcome_id])
+      unless info[:datapoint_value].blank?
+        dp = "#{info[:section]}DataPoint".constantize.find(:first, :conditions => ["design_detail_field_id=:design_detail_id AND value LIKE :value AND study_id=:study_id AND extraction_form_id=:extraction_form_id AND row_field_id=:row_field_id AND column_field_id=:column_field_id AND arm_id=:arm_id AND outcome_id=:outcome_id", params])
+        if dp.blank?
+          dp = "#{info[:section]}DataPoint".constantize.create(design_detail_field_id: info[:dd_id],
+                                                               value:                  info[:datapoint_value],
+                                                               notes:                  info[:notes],
+                                                               study_id:               info[:study_id],
+                                                               extraction_form_id:     info[:ef_id],
+                                                               subquestion_value:      info[:subquestion_value],
+                                                               row_field_id:           info[:row_field_id],
+                                                               column_field_id:        info[:column_field_id],
+                                                               arm_id:                 info[:arm_id],
+                                                               outcome_id:             info[:outcome_id])
+        end
+        dp.design_detail_field_id = info[:dd_id]
+        dp.value                  = info[:datapoint_value]
+        dp.subquestion_value      = info[:subquestion_value]
+        dp.notes                  = info[:notes]
+        dp.save
       end
     else
       begin
@@ -140,11 +147,13 @@ class Importer  #{{{1
                                                                                column_field_id:        info[:column_field_id],
                                                                                arm_id:                 info[:arm_id],
                                                                                outcome_id:             info[:outcome_id])
+      ensure
+        dp.design_detail_field_id = info[:dd_id]
+        dp.value                  = info[:datapoint_value]
+        dp.subquestion_value      = info[:subquestion_value]
+        dp.notes                  = info[:notes]
+        dp.save
       end
-      dp.value             = info[:datapoint_value]
-      dp.subquestion_value = info[:subquestion_value]
-      dp.notes             = info[:notes]
-      dp.save
     end
   end
 end
