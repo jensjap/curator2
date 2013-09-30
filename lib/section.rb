@@ -19,6 +19,15 @@ class MyStudy  #{{{1
     return listOfkqIDs
   end
 
+  def return_lof_section_detail_IDs(section)  #{{{2
+    lof_section_detail_IDs = Array.new
+
+    section_details = "#{section}".constantize.find(:all, :conditions => { extraction_form_id: @ef_id })
+    section_details.each do |s|
+      lof_section_detail_IDs.push s.id
+    end
+  end
+
   ## Puts together a list of design detail IDs. These are the IDs of the design detail questions on the given extraction form
   ## Integer -> (listOf DesignDetailIDs)
   def get_listOfddIDs  #{{{2
@@ -48,8 +57,11 @@ class MyStudy  #{{{1
 
     ## DESIGN DETAILS SECTION
     #########################
-    listOfddIDs = get_listOfddIDs
-    listOfddIDs.each do |dd_id|
+    #listOfddIDs = get_listOfddIDs
+    lof_design_detail_IDs = return_lof_section_detail_IDs(section="DesignDetail")
+    #listOfddIDs = get_listOf_sectionDetailIDs
+    #listOfddIDs.each do |dd_id|
+    lof_design_detail_IDs.each do |dd_id|
       design_detail_info(dd_id)
     end
 
@@ -62,12 +74,20 @@ class MyStudy  #{{{1
     #!!!
     listOfarmIDs = get_listOfarmIDs(@study_id)
     listOfarmIDs.each do |arm_id|
-      
+      listOfArmDetailIDs = get_listOfArmDetailIDs(@study_id, arm_id)
+      puts "Found the following arm detail IDs associated with arm ID #{arm_id}:"
+      listOfArmDetailIDs.each do |ad_id|
+        arm_detail_info(arm_id, ad_id)
+        puts "#{ad_id}"
+      end
     end
 
     ## BASELINE CHARACTERISTICS SECTION
     ###################################
     #!!!
+  end
+
+  def get_list_ofArmDetailIDs(study_id, arm_id)  #{{{2
   end
 
   def get_listOfarmIDs(study_id)  #{{{2
