@@ -150,6 +150,10 @@ class Importer  #{{{1
       ensure
         dp.design_detail_field_id = info[:dd_id]
         dp.value                  = info[:datapoint_value]
+        #!!! Need to think about this some more. Is it safe to update these with values taken from the spreadsheet??
+        dp.study_id               = info[:study_id]
+        dp.extraction_form_id     = info[:ef_id]
+        ############################################################################################################
         dp.subquestion_value      = info[:subquestion_value]
         dp.notes                  = info[:notes]
         dp.save

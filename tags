@@ -11,14 +11,16 @@ MyStudy	lib/section.rb	/^class MyStudy  #{{{1$/;"	c
 Parser	lib/trollop.rb	/^class Parser$/;"	c	class:Trollop
 Trollop	lib/trollop.rb	/^module Trollop$/;"	m
 VersionNeeded	lib/trollop.rb	/^class VersionNeeded < StandardError; end$/;"	c	class:Trollop
-_build_dd_matrix	lib/section.rb	/^  def _build_dd_matrix(dd_id)  #{{{2$/;"	f	class:MyStudy
 _build_dd_matrix_checkbox	lib/section.rb	/^  def _build_dd_matrix_checkbox(dd_id)  #{{{2$/;"	f	class:MyStudy
 _build_dd_matrix_radio	lib/section.rb	/^  def _build_dd_matrix_radio(dd_id)  #{{{2$/;"	f	class:MyStudy
+_build_dd_matrix_select	lib/section.rb	/^  def _build_dd_matrix_select(dd_id)  #{{{2$/;"	f	class:MyStudy
 _build_dd_one_column	lib/section.rb	/^  def _build_dd_one_column(dd_id)  #{{{2$/;"	f	class:MyStudy
 _build_dd_text	lib/section.rb	/^  def _build_dd_text(dd_id)  #{{{2$/;"	f	class:MyStudy
-_find_choice_dd	lib/worker.rb	/^  def _find_choice_dd(info)$/;"	f	class:Importer
+_create_blank_rows	lib/section.rb	/^  def _create_blank_rows(section, dd_id, row_field_id, ddf_cols)  #{{{2$/;"	f	class:MyStudy
+_find_choice_dd	lib/worker.rb	/^  def _find_choice_dd(info)  #{{{2$/;"	f	class:Importer
+_find_lof_matrix_select_dropdown_options	lib/section.rb	/^  def _find_lof_matrix_select_dropdown_options(section, row_id, column_id)$/;"	f	class:MyStudy
 _print_dd_csv	lib/section.rb	/^  def _print_dd_csv(dd_id, dddp)  #{{{2$/;"	f	class:MyStudy
-_process_arm_for_study	lib/worker.rb	/^  def _process_arm_for_study(row_info)$/;"	f	class:Importer
+_process_arm_for_study	lib/worker.rb	/^  def _process_arm_for_study(row_info)  #{{{2$/;"	f	class:Importer
 banner	lib/trollop.rb	/^  def banner s; @order << [:text, s] end$/;"	f
 cloaker	lib/trollop.rb	/^  def cloaker &b$/;"	f
 collect_argument_parameters	lib/trollop.rb	/^  def collect_argument_parameters args, start_at$/;"	f
@@ -32,13 +34,15 @@ die	lib/trollop.rb	/^def die arg, msg=nil$/;"	f
 each_arg	lib/trollop.rb	/^  def each_arg args$/;"	f
 educate	lib/trollop.rb	/^  def educate stream=$stdout$/;"	f
 find_dddp	lib/section.rb	/^  def find_dddp(dd_id, listOf_ddf)$/;"	f	class:MyStudy
-find_dddp_matrix	lib/section.rb	/^  def find_dddp_matrix(dd_id, ddf_rows, ddf_cols)$/;"	f	class:MyStudy
 find_dddp_matrix_checkbox	lib/section.rb	/^  def find_dddp_matrix_checkbox(dd_id, ddf_rows, ddf_cols)  #{{{2$/;"	f	class:MyStudy
 find_dddp_matrix_radio	lib/section.rb	/^  def find_dddp_matrix_radio(dd_id, ddf_rows, ddf_cols)$/;"	f	class:MyStudy
+find_dddp_matrix_select	lib/section.rb	/^  def find_dddp_matrix_select(dd_id, ddf_rows, ddf_cols)$/;"	f	class:MyStudy
 get_extraction_form_ids	main.rb	/^def get_extraction_form_ids(project_id)$/;"	f
 get_listOfStudyIDs_by_efIDs	main.rb	/^def get_listOfStudyIDs_by_efIDs(ef_id)$/;"	f
+get_listOfarmIDs	lib/section.rb	/^  def get_listOfarmIDs(study_id)  #{{{2$/;"	f	class:MyStudy
 get_listOfddIDs	lib/section.rb	/^  def get_listOfddIDs  #{{{2$/;"	f	class:MyStudy
 get_listOfkqIDs	lib/section.rb	/^  def get_listOfkqIDs  #{{{2$/;"	f	class:MyStudy
+get_list_ofArmDetailIDs	lib/section.rb	/^  def get_list_ofArmDetailIDs(study_id, arm_id)  #{{{2$/;"	f	class:MyStudy
 get_project_info	main.rb	/^def get_project_info(project_id)$/;"	f
 initialize	lib/section.rb	/^  def initialize(project_id, project_info, ef_id, study_id)  #{{{2$/;"	f	class:MyStudy
 initialize	lib/trollop.rb	/^  def initialize *a, &b$/;"	f	class:Trollop.Parser
@@ -59,6 +63,7 @@ process_arms	lib/worker.rb	/^  def process_arms  #{{{2$/;"	f	class:Importer
 process_design_details	lib/worker.rb	/^  def process_design_details  #{{{2$/;"	f	class:Importer
 publication_info	lib/section.rb	/^  def publication_info  #{{{2$/;"	f	class:MyStudy
 resolve_default_short_options!	lib/trollop.rb	/^  def resolve_default_short_options!$/;"	f	class:collect_argument_parameters
+return_lof_section_detail_IDs	lib/section.rb	/^  def return_lof_section_detail_IDs(section)  #{{{2$/;"	f	class:MyStudy
 sort	lib/worker.rb	/^  def sort  #{{{2$/;"	f	class:Importer
 stop_on	lib/trollop.rb	/^  def stop_on *words$/;"	f
 stop_on_unknown	lib/trollop.rb	/^  def stop_on_unknown$/;"	f

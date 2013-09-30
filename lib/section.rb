@@ -26,6 +26,8 @@ class MyStudy  #{{{1
     section_details.each do |s|
       lof_section_detail_IDs.push s.id
     end
+
+    return lof_section_detail_IDs
   end
 
   ## Puts together a list of design detail IDs. These are the IDs of the design detail questions on the given extraction form
@@ -57,40 +59,54 @@ class MyStudy  #{{{1
 
     ## DESIGN DETAILS SECTION
     #########################
-    #listOfddIDs = get_listOfddIDs
     lof_design_detail_IDs = return_lof_section_detail_IDs(section="DesignDetail")
-    #listOfddIDs = get_listOf_sectionDetailIDs
-    #listOfddIDs.each do |dd_id|
     lof_design_detail_IDs.each do |dd_id|
       design_detail_info(dd_id)
     end
 
-    ## ARM SECTION
-    ##############
-    #!!!
+    ## ARMS SECTION
+    ###############
+    lof_arm_IDs = get_listOfArmIDs(@study_id)
+    lof_arm_IDs.each do |arm_id|
+      arm_info(arm_id)
+    end
 
     ## ARM DESTAILS SECTION
     #######################
     #!!!
-    listOfarmIDs = get_listOfarmIDs(@study_id)
-    listOfarmIDs.each do |arm_id|
-      listOfArmDetailIDs = get_listOfArmDetailIDs(@study_id, arm_id)
-      puts "Found the following arm detail IDs associated with arm ID #{arm_id}:"
-      listOfArmDetailIDs.each do |ad_id|
-        arm_detail_info(arm_id, ad_id)
-        puts "#{ad_id}"
-      end
-    end
+#    listOfarmIDs = get_listOfArmIDs(@study_id)
+#    listOfarmIDs.each do |arm_id|
+#      listOfArmDetailIDs = get_listOfArmDetailIDs(@study_id, arm_id)
+#      puts "Found the following arm detail IDs associated with arm ID #{arm_id}:"
+#      listOfArmDetailIDs.each do |ad_id|
+#        arm_detail_info(arm_id, ad_id)
+#        puts "#{ad_id}"
+#      end
+#    end
 
     ## BASELINE CHARACTERISTICS SECTION
     ###################################
     #!!!
   end
 
-  def get_list_ofArmDetailIDs(study_id, arm_id)  #{{{2
+  def arm_info(arm_id)  #{{{2
+    output = ",,,,,,,,,,,,,,,,,"\
+             "Arm,,,,,"\
+             "\"#{_escape_text(Arm.find(arm_id).title)}\",,"\
+             "#{@study_id},"\
+             "#{@ef_id}"
+    puts output
   end
 
-  def get_listOfarmIDs(study_id)  #{{{2
+#  def return_lof_arm_IDs(section)
+#    # PrimaryPublication_PMID [9]
+#    # Section [17]
+#    # VALUE [22]
+#    # Study ID [24]
+#    # EF ID [25]
+#  end
+
+  def get_listOfArmIDs(study_id)  #{{{2
     listOf_armIDs = Array.new
 
     arms = Arm.find(:all, :conditions => { study_id: study_id})
@@ -136,7 +152,7 @@ class MyStudy  #{{{1
     output = ",KeyQuestion"\
              ",#{kq_id}"\
              ",#{KeyQuestion.find(kq_id).question_number}"\
-             ",\"#{KeyQuestion.find(kq_id).question}\""
+             ",\"#{_escape_text(KeyQuestion.find(kq_id).question)}\""
     return output
   end
 
@@ -424,31 +440,43 @@ class MyStudy  #{{{1
       row_text = ""
     ensure
     end
+
     begin
       col_text = DesignDetailField.find(dddp.column_field_id).option_text
     rescue
       col_text = ""
     ensure
     end
+
     output = ",DesignDetail"\
-             ",\"#{DesignDetail.find(dd_id).field_type}\""\
+             ",\"#{_escape_text(DesignDetail.find(dd_id).field_type)}\""\
              ",#{dddp.id}"\
              ",#{dddp.design_detail_field_id}"\
-             ",\"#{DesignDetail.find(dd_id).question}\""\
-             ",\"#{dddp.value}\""\
-             ",\"#{dddp.notes}\""\
+             ",\"#{_escape_text(DesignDetail.find(dd_id).question)}\""\
+             ",\"#{_escape_text(dddp.value)}\""\
+             ",\"#{_escape_text(dddp.notes)}\""\
              ",#{dddp.study_id}"\
              ",#{dddp.extraction_form_id}"\
-             ",\"#{dddp.subquestion_value}\""\
+             ",\"#{_escape_text(dddp.subquestion_value)}\""\
              ",#{dddp.row_field_id}"\
-             ",\"#{row_text}\""\
+             ",\"#{_escape_text(row_text)}\""\
              ",#{dddp.column_field_id}"\
-             ",\"#{col_text}\""\
+             ",\"#{_escape_text(col_text)}\""\
              ",#{dddp.arm_id}"\
              ",#{dddp.outcome_id}"
 
     output = "#{common_info}#{output}"
     puts output
+  end
+
+  def _escape_text(text)  #{{{2
+    begin
+      escaped_txt = text.gsub(/"/, '""')
+    rescue NoMethodError
+      escaped_txt = text
+    end
+
+    return escaped_txt
   end
 end
 
