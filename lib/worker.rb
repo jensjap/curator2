@@ -13,13 +13,13 @@ class Importer  #{{{1
   end
 
   def sort  #{{{2
+    @arm                     = Array.new
     @designDetails           = Array.new
     @armDetails              = Array.new
     @baselineCharacteristics = Array.new
     @outcomeDetails          = Array.new
-    @keyQuestion             = Array.new
-    @primaryPublication      = Array.new
-    @arm                     = Array.new
+    @keyQuestions            = Array.new
+    @primaryPublications     = Array.new
 
     csv_raw = @csv_raw.blank? ? main : @csv_raw
     csv_raw.each do |row|
@@ -30,9 +30,13 @@ class Importer  #{{{1
       when "DesignDetail"
         @designDetails.push row
       when "KeyQuestion"
-        @keyQuestion.push row
+        @keyQuestions.push row
       when "PrimaryPublication"
-        @primaryPublication.push row
+        @primaryPublications.push row
+      when "ArmDetail"
+        @armDetails.push row
+      when "BaselineCharacteristic"
+        @baselineCharacteristics.push row
       end
 
     end
@@ -83,9 +87,122 @@ class Importer  #{{{1
       row_info[:row_field_id]       = r[27]
       row_info[:column_field_id]    = r[29]
       row_info[:arm_id]             = r[31]
-      row_info[:outcome_id]         = r[32]
+      row_info[:arm_title]          = r[32]
+      row_info[:outcome_id]         = r[33]
+      row_info[:outcome_title]      = r[34]
 
       write_to_db(row_info)
+    end
+  end
+
+  def process_arm_details
+    @armDetails.each do |a|
+      row_info = Hash.new
+
+      row_info[:ef_id]              = a[1]
+      row_info[:study_id]           = a[3]
+      row_info[:section]            = a[17]
+      row_info[:type]               = a[18]
+      row_info[:datapoint_ID]       = a[19]
+      row_info[:dd_id]              = a[20]
+      row_info[:datapoint_value]    = a[22]
+      row_info[:notes]              = a[23]
+      row_info[:subquestion_value]  = a[26]
+      row_info[:row_field_id]       = a[27]
+      row_info[:column_field_id]    = a[29]
+      row_info[:arm_id]             = a[31]
+      row_info[:arm_title]          = a[32]
+      row_info[:outcome_id]         = a[33]
+      row_info[:outcome_title]      = a[34]
+
+      insert_db(section="ArmDetail", info=row_info)
+    end
+  end
+
+  def process_baseline_characteristics
+    @baselineCharacteristics.each do |b|
+      row_info = Hash.new
+
+      row_info[:ef_id]              = b[1]
+      row_info[:study_id]           = b[3]
+      row_info[:section]            = b[17]
+      row_info[:type]               = b[18]
+      row_info[:datapoint_ID]       = b[19]
+      row_info[:dd_id]              = b[20]
+      row_info[:datapoint_value]    = b[22]
+      row_info[:notes]              = b[23]
+      row_info[:subquestion_value]  = b[26]
+      row_info[:row_field_id]       = b[27]
+      row_info[:column_field_id]    = b[29]
+      row_info[:arm_id]             = b[31]
+      row_info[:arm_title]          = b[32]
+      row_info[:outcome_id]         = b[33]
+      row_info[:outcome_title]      = b[34]
+
+      insert_db(section="BaselineCharacteristic", info=row_info)
+    end
+  end
+
+  def insert_db(section, info)  #{{{2
+    params = {:section_detail_id      => info[:dd_id],
+              :value                  => "%#{info[:datapoint_value]}%",
+              :study_id               => info[:study_id],
+              :extraction_form_id     => info[:ef_id],
+              :row_field_id           => info[:row_field_id],
+              :column_field_id        => info[:column_field_id],
+              :arm_id                 => info[:arm_id],
+              :outcome_id             => info[:outcome_id]}
+
+    section_field_id_name = "#{info[:section].underscore}_field_id"
+
+    if info[:datapoint_ID].blank?
+      p info
+      gets
+      unless info[:datapoint_value].blank?
+        dp = "#{info[:section]}DataPoint".constantize.find(:first, :conditions => ["#{info[:section].underscore}_field_id=:section_detail_id AND value LIKE :value AND study_id=:study_id AND extraction_form_id=:extraction_form_id AND row_field_id=:row_field_id AND column_field_id=:column_field_id AND arm_id=:arm_id AND outcome_id=:outcome_id", params])
+        if dp.blank?
+          dp = "#{info[:section]}DataPoint".constantize.create("#{info[:section].underscore}_field_id".to_sym => info[:dd_id],
+                                                               :value                 => info[:datapoint_value],
+                                                               :notes                 => info[:notes],
+                                                               :study_id              => info[:study_id],
+                                                               :extraction_form_id    => info[:ef_id],
+                                                               :subquestion_value     => info[:subquestion_value],
+                                                               :row_field_id          => info[:row_field_id],
+                                                               :column_field_id       => info[:column_field_id],
+                                                               :arm_id                => info[:arm_id],
+                                                               :outcome_id            => info[:outcome_id])
+        end
+        dp.instance_eval(section_field_id_name) = info[:dd_id]
+        dp.value                                = info[:datapoint_value]
+        dp.subquestion_value                    = info[:subquestion_value]
+        dp.notes                                = info[:notes]
+        dp.save
+      end
+    else
+      begin
+        dp                   = "#{info[:section]}DataPoint".constantize.find(info[:datapoint_ID])
+      rescue
+        dp                   = "#{info[:section]}DataPoint".constantize.create("#{info[:section].underscore}_field_id".to_sym => info[:dd_id],
+                                                                               :value                 => info[:datapoint_value],
+                                                                               :notes                 => info[:notes],
+                                                                               :study_id              => info[:study_id],
+                                                                               :extraction_form_id    => info[:ef_id],
+                                                                               :subquestion_value     => info[:subquestion_value],
+                                                                               :row_field_id          => info[:row_field_id],
+                                                                               :column_field_id       => info[:column_field_id],
+                                                                               :arm_id                => info[:arm_id],
+                                                                               :outcome_id            => info[:outcome_id])
+      ensure
+        dp.instance_eval(section_field_id_name) = info[:dd_id]
+        dp.value                                = info[:datapoint_value]
+        #!!! Need to think about this some more. Is it safe to update these with values taken from the spreadsheet??
+        dp.study_id                             = info[:study_id]
+        dp.extraction_form_id                   = info[:ef_id]
+        ############################################################################################################
+        dp.subquestion_value                    = info[:subquestion_value]
+        dp.notes                                = info[:notes]
+        dp.save
+      end
     end
   end
 

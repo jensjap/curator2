@@ -103,6 +103,7 @@ class MyStudy  #{{{1
       _build_text_row(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
     when /matrix_radio/
       #puts "Found a #{section_detail.field_type} question in the #{section} section"
+      _build_matrix_radio(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
     when /matrix_checkbox/
       #puts "Found a #{section_detail.field_type} question in the #{section} section"
     when /matrix_select/
@@ -211,7 +212,7 @@ class MyStudy  #{{{1
                                                    :outcome_id                       => outcome_id)
     end
 
-    _print_dd_csv(section_detail_id, dddp)
+    _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
   end
 
   def _build_dd_matrix_checkbox(dd_id)  #{{{2
@@ -237,6 +238,69 @@ class MyStudy  #{{{1
 
     ## find_dddp_matrix_radio also takes care of printing the csv line
     find_dddp_matrix_radio(dd_id, ddf_rows, ddf_cols)
+  end
+
+  def _build_matrix_radio(section, section_detail_id, arm_id, outcome_id)  #{{{2
+    ## This cannot return nil (I think)
+    section_field_rows = "#{section}Field".constantize.find(:all, :conditions => { "#{section.underscore}_id".to_sym => section_detail_id,
+                                                                                   :column_number                    => 0 })
+    section_field_cols = "#{section}Field".constantize.find(:all, :conditions => { "#{section.underscore}_id".to_sym => section_detail_id,
+                                                                                   :row_number                       => 0 })
+
+    ## find_dp_matrix_radio also takes care of printing the csv line
+    find_dp_matrix_radio(section=section, section_detail_id=section_detail_id, rows=section_field_rows, cols=section_field_cols, arm_id=arm_id, outcome_id=outcome_id)
+  end
+
+  def find_dp_matrix_radio(section, section_detail_id, rows, cols, arm_id, outcome_id)  #{{{2
+    rows.each do |row|
+      if row.row_number == -1
+        dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                               :study_id                               => @study_id,
+                                                                               :extraction_form_id                     => @ef_id,
+                                                                               :arm_id                                 => arm_id,
+                                                                               :outcome_id                             => outcome_id,
+                                                                               :row_field_id                           => row.id })
+        if dddp.blank?
+          dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                       :study_id                               => @study_id,
+                                                       :extraction_form_id                     => @ef_id,
+                                                       :row_field_id                           => row.id,
+                                                       :column_field_id                        => 0,
+                                                       :arm_id                                 => arm_id,
+                                                       :outcome_id                             => outcome_id)
+        end
+  
+        _print_csv_line(section, section_detail_id, dddp)
+      else
+        # Flag to see if there was any choice found for this row
+        any_choice_found = false
+
+        cols.each do |col|
+          dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                                 :value                                  => col.option_text,
+                                                                                 :study_id                               => @study_id,
+                                                                                 :extraction_form_id                     => @ef_id,
+                                                                                 :row_field_id                           => row.id,
+                                                                                 :arm_id                                 => arm_id,
+                                                                                 :outcome_id                             => outcome_id })
+          unless dddp.blank?
+            any_choice_found = true
+            _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
+          end
+        end
+
+        if any_choice_found == false
+          dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                       :study_id                               => @study_id,
+                                                       :extraction_form_id                     => @ef_id,
+                                                       :row_field_id                           => row.id,
+                                                       :column_field_id                        => 0,
+                                                       :arm_id                                 => arm_id,
+                                                       :outcome_id                             => outcome_id)
+          _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
+        end
+      end
+    end
   end
 
   def _build_dd_one_column(dd_id)  #{{{2
@@ -399,7 +463,7 @@ class MyStudy  #{{{1
     end
   end
 
-  def _find_lof_matrix_select_dropdown_options(section, row_id, column_id)
+  def _find_lof_matrix_select_dropdown_options(section, row_id, column_id)  #{{{2
     return MatrixDropdownOption.find(:all, :conditions => { row_id:     row_id,
                                                             column_id:  column_id,
                                                             model_name: "#{section}".underscore })
@@ -456,7 +520,6 @@ class MyStudy  #{{{1
   end
 
   def _print_dd_csv(dd_id, dddp)  #{{{2
-    #!!!! Need to make this generic
     begin
       row_text = DesignDetailField.find(dddp.row_field_id).option_text
     rescue
@@ -487,6 +550,60 @@ class MyStudy  #{{{1
              ",\"#{_escape_text(col_text)}\""\
              ",#{dddp.arm_id}"\
              ",#{dddp.outcome_id}"
+
+    output = "#{common_info}#{output}"
+    puts output
+  end
+
+  def _print_csv_line(section, dd_id, dddp)  #{{{2
+    begin
+      row_text = "#{section}Field".constantize.find(dddp.row_field_id).option_text
+    rescue
+      row_text = ""
+    ensure
+    end
+
+    begin
+      col_text = "#{section}Field".constantize.find(dddp.column_field_id).option_text
+    rescue
+      col_text = ""
+    ensure
+    end
+
+    begin
+      arm_title = Arm.find(dddp.arm_id).title
+    rescue
+      arm_title = ""
+    ensure
+    end
+
+    begin
+      outcome_title = Outcome.find(dddp.outcome_id).title
+    rescue
+      outcome_title = ""
+    ensure
+    end
+
+    section_field_id_name = "#{section.underscore}_field_id"
+
+    output = ",#{section}"\
+             ",\"#{_escape_text("#{section}".constantize.find(dd_id).field_type)}\""\
+             ",#{dddp.id}"\
+             ",#{dddp.instance_eval(section_field_id_name)}"\
+             ",\"#{_escape_text("#{section}".constantize.find(dd_id).question)}\""\
+             ",\"#{_escape_text(dddp.value)}\""\
+             ",\"#{_escape_text(dddp.notes)}\""\
+             ",#{dddp.study_id}"\
+             ",#{dddp.extraction_form_id}"\
+             ",\"#{_escape_text(dddp.subquestion_value)}\""\
+             ",#{dddp.row_field_id}"\
+             ",\"#{_escape_text(row_text)}\""\
+             ",#{dddp.column_field_id}"\
+             ",\"#{_escape_text(col_text)}\""\
+             ",#{dddp.arm_id}"\
+             ",\"#{arm_title}\""\
+             ",#{dddp.outcome_id}"\
+             ",\"#{outcome_title}\""
 
     output = "#{common_info}#{output}"
     puts output
