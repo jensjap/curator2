@@ -74,19 +74,42 @@ class MyStudy  #{{{1
     ## ARM DESTAILS SECTION
     #######################
     #!!!
-#    listOfarmIDs = get_listOfArmIDs(@study_id)
-#    listOfarmIDs.each do |arm_id|
-#      listOfArmDetailIDs = get_listOfArmDetailIDs(@study_id, arm_id)
-#      puts "Found the following arm detail IDs associated with arm ID #{arm_id}:"
-#      listOfArmDetailIDs.each do |ad_id|
-#        arm_detail_info(arm_id, ad_id)
-#        puts "#{ad_id}"
-#      end
-#    end
+    listOfarmIDs = get_listOfArmIDs(@study_id)
+    listOfarmIDs.each do |arm_id|
+      listOfArmDetailIDs = return_lof_section_detail_IDs(section="ArmDetail")
+      listOfArmDetailIDs.each do |ad_id|
+        section_detail_info(arm_id=arm_id, outcome_id=0, section_detail_id=ad_id, section="ArmDetail")
+      end
+    end
 
     ## BASELINE CHARACTERISTICS SECTION
     ###################################
     #!!!
+    listOfarmIDs = get_listOfArmIDs(@study_id)
+    listOfarmIDs.each do |arm_id|
+      listOfBaselineCharacteristicIDs = return_lof_section_detail_IDs(section="BaselineCharacteristic")
+      listOfBaselineCharacteristicIDs.each do |bc_id|
+        section_detail_info(arm_id=arm_id, outcome_id=0, section_detail_id=bc_id, section="BaselineCharacteristic")
+      end
+    end
+  end
+
+  def section_detail_info(arm_id, outcome_id, section_detail_id, section)  #{{{2
+    section_detail = "#{section}".constantize.find(section_detail_id)
+    
+    case section_detail.field_type
+    when /text/
+      #puts "Found a #{section_detail.field_type} question in the #{section} section"
+      _build_text_row(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
+    when /matrix_radio/
+      #puts "Found a #{section_detail.field_type} question in the #{section} section"
+    when /matrix_checkbox/
+      #puts "Found a #{section_detail.field_type} question in the #{section} section"
+    when /matrix_select/
+      #puts "Found a #{section_detail.field_type} question in the #{section} section"
+    else
+      #puts "Found a #{section_detail.field_type} question in the #{section} section"
+    end
   end
 
   def arm_info(arm_id)  #{{{2
@@ -97,14 +120,6 @@ class MyStudy  #{{{1
              "#{@ef_id}"
     puts output
   end
-
-#  def return_lof_arm_IDs(section)
-#    # PrimaryPublication_PMID [9]
-#    # Section [17]
-#    # VALUE [22]
-#    # Study ID [24]
-#    # EF ID [25]
-#  end
 
   def get_listOfArmIDs(study_id)  #{{{2
     listOf_armIDs = Array.new
@@ -130,21 +145,21 @@ class MyStudy  #{{{1
 
     output = "#{@project_id}"\
              ",#{@ef_id}"\
-             ",\"#{ExtractionForm.find(@ef_id).title}\""\
+             ",\"#{_escape_text(ExtractionForm.find(@ef_id).title)}\""\
              ",#{@study_id}"\
              ",#{pp.id}"\
-             ",\"#{pp.title}\""\
-             ",\"#{pp.author}\""\
-             ",\"#{pp.country}\""\
+             ",\"#{_escape_text(pp.title)}\""\
+             ",\"#{_escape_text(pp.author)}\""\
+             ",\"#{_escape_text(pp.country)}\""\
              ",#{pp.year}"\
              ",#{pp.pmid}"\
-             ",\"#{pp.journal}\""\
+             ",\"#{_escape_text(pp.journal)}\""\
              ",#{pp.volume}"\
              ",#{pp.issue}"\
-             ",\"#{pp.trial_title}\""\
+             ",\"#{_escape_text(pp.trial_title)}\""\
              ",#{ppn.id}"\
              ",#{ppn.number}"\
-             ",\"#{ppn.number_type}\""
+             ",\"#{_escape_text(ppn.number_type)}\""
     return output
   end
 
@@ -165,14 +180,14 @@ class MyStudy  #{{{1
     design_detail = DesignDetail.find(dd_id)
 
     if design_detail.field_type == "text"
-      _build_dd_text(dd_id)
-    elsif design_detail.field_type.include?('matrix_checkbox')
-      _build_dd_matrix_checkbox(dd_id)
+      _build_text_row(section="DesignDetail", section_detail_id=dd_id, arm_id=0, outcome_id=0)
     elsif design_detail.field_type.include?('matrix_radio')
       _build_dd_matrix_radio(dd_id)
+    elsif design_detail.field_type.include?('matrix_checkbox')
+      _build_dd_matrix_checkbox(dd_id)
     elsif design_detail.field_type.include?('matrix_select')
       _build_dd_matrix_select(dd_id)
-    else
+    else # select, radio, checkbox
       ## These are any questions that only have 1 column for answer options
       ## Single choice radio button questions (radio), drop-down (select) and
       ## single column multiple choice (aka. checkbox) fall under this category
@@ -180,16 +195,23 @@ class MyStudy  #{{{1
     end
   end
 
-  def _build_dd_text(dd_id)  #{{{2
-    dddp = DesignDetailDataPoint.find_by_design_detail_field_id_and_study_id_and_extraction_form_id(dd_id, @study_id, @ef_id)
+  def _build_text_row(section, section_detail_id, arm_id, outcome_id)  #{{{2
+    #dddp = "#{section}DataPoint".constantize.find_by_design_detail_field_id_and_study_id_and_extraction_form_id(dd_id, @study_id, @ef_id)
+    dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { :"#{section.underscore}_field_id" => section_detail_id,
+                                                                           :study_id                         => @study_id,
+                                                                           :extraction_form_id               => @ef_id,
+                                                                           :arm_id                           => arm_id,
+                                                                           :outcome_id                       => outcome_id })
 
     if dddp.blank?
-      dddp = DesignDetailDataPoint.new(design_detail_field_id: dd_id,
-                                       study_id: @study_id,
-                                       extraction_form_id: @ef_id)
+      dddp = "#{section}DataPoint".constantize.new(:"#{section.underscore}_field_id" => section_detail_id,
+                                                   :study_id                         => @study_id,
+                                                   :extraction_form_id               => @ef_id,
+                                                   :arm_id                           => arm_id,
+                                                   :outcome_id                       => outcome_id)
     end
 
-    _print_dd_csv(dd_id, dddp)
+    _print_dd_csv(section_detail_id, dddp)
   end
 
   def _build_dd_matrix_checkbox(dd_id)  #{{{2
@@ -434,6 +456,7 @@ class MyStudy  #{{{1
   end
 
   def _print_dd_csv(dd_id, dddp)  #{{{2
+    #!!!! Need to make this generic
     begin
       row_text = DesignDetailField.find(dddp.row_field_id).option_text
     rescue
