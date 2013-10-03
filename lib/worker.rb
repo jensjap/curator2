@@ -153,11 +153,7 @@ class Importer  #{{{1
               :arm_id                 => info[:arm_id],
               :outcome_id             => info[:outcome_id]}
 
-    section_field_id_name = "#{info[:section].underscore}_field_id"
-
     if info[:datapoint_ID].blank?
-      p info
-      gets
       unless info[:datapoint_value].blank?
         dp = "#{info[:section]}DataPoint".constantize.find(:first, :conditions => ["#{info[:section].underscore}_field_id=:section_detail_id AND value LIKE :value AND study_id=:study_id AND extraction_form_id=:extraction_form_id AND row_field_id=:row_field_id AND column_field_id=:column_field_id AND arm_id=:arm_id AND outcome_id=:outcome_id", params])
         if dp.blank?
@@ -172,7 +168,7 @@ class Importer  #{{{1
                                                                :arm_id                => info[:arm_id],
                                                                :outcome_id            => info[:outcome_id])
         end
-        dp.instance_eval(section_field_id_name) = info[:dd_id]
+        dp.send("#{info[:section].underscore}_field_id=", info[:dd_id])
         dp.value                                = info[:datapoint_value]
         dp.subquestion_value                    = info[:subquestion_value]
         dp.notes                                = info[:notes]
@@ -193,7 +189,7 @@ class Importer  #{{{1
                                                                                :arm_id                => info[:arm_id],
                                                                                :outcome_id            => info[:outcome_id])
       ensure
-        dp.instance_eval(section_field_id_name) = info[:dd_id]
+        dp.send("#{info[:section].underscore}_field_id=", info[:dd_id])
         dp.value                                = info[:datapoint_value]
         #!!! Need to think about this some more. Is it safe to update these with values taken from the spreadsheet??
         dp.study_id                             = info[:study_id]

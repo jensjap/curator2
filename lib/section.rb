@@ -86,6 +86,10 @@ class MyStudy  #{{{1
     ###################################
     #!!!
     listOfarmIDs = get_listOfArmIDs(@study_id)
+
+    # Baseline characteristics also has this thing where it records an "All Arms (Total)". This is represented with arm_id=0
+    listOfarmIDs.push 0
+
     listOfarmIDs.each do |arm_id|
       listOfBaselineCharacteristicIDs = return_lof_section_detail_IDs(section="BaselineCharacteristic")
       listOfBaselineCharacteristicIDs.each do |bc_id|
