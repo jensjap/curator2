@@ -143,7 +143,9 @@ if __FILE__ == $0  # {{{1
            ",Col_Field_ID"\
            ",Col_text"\
            ",Arm_ID"\
-           ",Outcome_ID"
+           ",Arm_Title"\
+           ",Outcome_ID"\
+           ",Outcome_Title"
       listOfStudyIDs = get_listOfStudyIDs_by_efIDs(ef_id)
       listOfStudyIDs.each do |study_id|
 
@@ -163,6 +165,8 @@ if __FILE__ == $0  # {{{1
       workerbee.sort
       workerbee.process_design_details
       workerbee.process_arms
+      workerbee.process_arm_details
+      workerbee.process_baseline_characteristics
     end
   end
 end

@@ -9,6 +9,78 @@ class MyStudy  #{{{1
 
   ## Puts together a list of key question IDs that are addressed by the given study ID
   ## Integer -> (listOf KeyQuestionIDs)
+  def print_main  #{{{2
+
+    ## KEY QUESTIONS SECTION
+    ########################
+    listOfkqIDs = get_listOfkqIDs
+    listOfkqIDs.each do |kq_id|
+      output = "#{common_info}#{key_question_info(kq_id)}"
+      puts output
+    end
+
+    ## PUBLICATIONS SECTION
+    #######################
+    output = "#{common_info}#{publication_info}"
+    puts output
+
+    ## DESIGN DETAILS SECTION
+    #########################
+    lof_design_detail_IDs = return_lof_section_detail_IDs(section="DesignDetail")
+    lof_design_detail_IDs.each do |dd_id|
+      design_detail_info(dd_id)
+    end
+
+    ## ARMS SECTION
+    ###############
+    lof_arm_IDs = get_listOfArmIDs(@study_id)
+    lof_arm_IDs.each do |arm_id|
+      arm_info(arm_id)
+    end
+
+    ## ARM DETAILS SECTION
+    #######################
+    listOfarmIDs = get_listOfArmIDs(@study_id)
+    listOfarmIDs.each do |arm_id|
+      listOfArmDetailIDs = return_lof_section_detail_IDs(section="ArmDetail")
+      listOfArmDetailIDs.each do |ad_id|
+        section_detail_info(arm_id=arm_id, outcome_id=0, section_detail_id=ad_id, section="ArmDetail")
+      end
+    end
+
+    ## BASELINE CHARACTERISTICS SECTION
+    ###################################
+    listOfarmIDs = get_listOfArmIDs(@study_id)
+
+    # Baseline characteristics also has this thing where it records an "All Arms (Total)". This is represented with arm_id=0
+    listOfarmIDs.push 0
+
+    listOfarmIDs.each do |arm_id|
+      listOfBaselineCharacteristicIDs = return_lof_section_detail_IDs(section="BaselineCharacteristic")
+      listOfBaselineCharacteristicIDs.each do |bc_id|
+        section_detail_info(arm_id=arm_id, outcome_id=0, section_detail_id=bc_id, section="BaselineCharacteristic")
+      end
+    end
+
+    ## OUTCOMES SECTION
+    ###################
+    lof_outcome_IDs = get_listOfOutcomeIDs(@study_id)
+    lof_outcome_IDs.each do |outcome_id|
+      outcome_info(outcome_id)
+    end
+
+    ## OUTCOME DETAILS SECTION
+    #######################
+    listOfoutcomeIDs = get_listOfOutcomeIDs(@study_id)
+    listOfoutcomeIDs.each do |outcome_id|
+      listOfOutcomeDetailIDs = return_lof_section_detail_IDs(section="OutcomeDetail")
+      listOfOutcomeDetailIDs.each do |oc_id|
+        section_detail_info(arm_id=0, outcome_id=outcome_id, section_detail_id=oc_id, section="OutcomeDetail")
+      end
+    end
+
+  end
+
   def get_listOfkqIDs  #{{{2
     listOfkqIDs = Array.new
   
@@ -42,51 +114,21 @@ class MyStudy  #{{{1
     return listOfddIDs
   end
 
-  def print_main  #{{{2
-
-    ## KEY QUESTIONS SECTION
-    ########################
-    listOfkqIDs = get_listOfkqIDs
-    listOfkqIDs.each do |kq_id|
-      output = "#{common_info}#{key_question_info(kq_id)}"
-      puts output
+  def section_detail_info(arm_id, outcome_id, section_detail_id, section)  #{{{2
+    section_detail = "#{section}".constantize.find(section_detail_id)
+    
+    case section_detail.field_type
+    when /text/
+      _build_text_row(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
+    when /matrix_radio/
+      _build_matrix_radio(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
+    when /matrix_checkbox/
+      #puts "Found a #{section_detail.field_type} question in the #{section} section"
+    when /matrix_select/
+      _build_matrix_select(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
+    else # select, radio, checkbox
+      #puts "Found a #{section_detail.field_type} question in the #{section} section"
     end
-
-    ## PUBLICATIONS SECTION
-    #######################
-    output = "#{common_info}#{publication_info}"
-    puts output
-
-    ## DESIGN DETAILS SECTION
-    #########################
-    lof_design_detail_IDs = return_lof_section_detail_IDs(section="DesignDetail")
-    lof_design_detail_IDs.each do |dd_id|
-      design_detail_info(dd_id)
-    end
-
-    ## ARMS SECTION
-    ###############
-    lof_arm_IDs = get_listOfArmIDs(@study_id)
-    lof_arm_IDs.each do |arm_id|
-      arm_info(arm_id)
-    end
-
-    ## ARM DESTAILS SECTION
-    #######################
-    #!!!
-#    listOfarmIDs = get_listOfArmIDs(@study_id)
-#    listOfarmIDs.each do |arm_id|
-#      listOfArmDetailIDs = get_listOfArmDetailIDs(@study_id, arm_id)
-#      puts "Found the following arm detail IDs associated with arm ID #{arm_id}:"
-#      listOfArmDetailIDs.each do |ad_id|
-#        arm_detail_info(arm_id, ad_id)
-#        puts "#{ad_id}"
-#      end
-#    end
-
-    ## BASELINE CHARACTERISTICS SECTION
-    ###################################
-    #!!!
   end
 
   def arm_info(arm_id)  #{{{2
@@ -98,13 +140,25 @@ class MyStudy  #{{{1
     puts output
   end
 
-#  def return_lof_arm_IDs(section)
-#    # PrimaryPublication_PMID [9]
-#    # Section [17]
-#    # VALUE [22]
-#    # Study ID [24]
-#    # EF ID [25]
-#  end
+  def outcome_info(outcome_id)  #{{{2
+    output = ",,,,,,,,,,,,,,,,,"\
+             "Outcome,,,,,"\
+             "\"#{_escape_text(Outcome.find(outcome_id).title)}\",,"\
+             "#{@study_id},"\
+             "#{@ef_id}"
+    puts output
+  end
+
+  def get_listOfOutcomeIDs(study_id)  #{{{2
+    listOf_outcomeIDs = Array.new
+
+    outcomes = Outcome.find(:all, :conditions => { study_id: study_id})
+    outcomes.each do |a|
+      listOf_outcomeIDs.push a.id
+    end
+
+    return listOf_outcomeIDs
+  end
 
   def get_listOfArmIDs(study_id)  #{{{2
     listOf_armIDs = Array.new
@@ -130,21 +184,21 @@ class MyStudy  #{{{1
 
     output = "#{@project_id}"\
              ",#{@ef_id}"\
-             ",\"#{ExtractionForm.find(@ef_id).title}\""\
+             ",\"#{_escape_text(ExtractionForm.find(@ef_id).title)}\""\
              ",#{@study_id}"\
              ",#{pp.id}"\
-             ",\"#{pp.title}\""\
-             ",\"#{pp.author}\""\
-             ",\"#{pp.country}\""\
+             ",\"#{_escape_text(pp.title)}\""\
+             ",\"#{_escape_text(pp.author)}\""\
+             ",\"#{_escape_text(pp.country)}\""\
              ",#{pp.year}"\
              ",#{pp.pmid}"\
-             ",\"#{pp.journal}\""\
+             ",\"#{_escape_text(pp.journal)}\""\
              ",#{pp.volume}"\
              ",#{pp.issue}"\
-             ",\"#{pp.trial_title}\""\
+             ",\"#{_escape_text(pp.trial_title)}\""\
              ",#{ppn.id}"\
              ",#{ppn.number}"\
-             ",\"#{ppn.number_type}\""
+             ",\"#{_escape_text(ppn.number_type)}\""
     return output
   end
 
@@ -165,14 +219,14 @@ class MyStudy  #{{{1
     design_detail = DesignDetail.find(dd_id)
 
     if design_detail.field_type == "text"
-      _build_dd_text(dd_id)
-    elsif design_detail.field_type.include?('matrix_checkbox')
-      _build_dd_matrix_checkbox(dd_id)
+      _build_text_row(section="DesignDetail", section_detail_id=dd_id, arm_id=0, outcome_id=0)
     elsif design_detail.field_type.include?('matrix_radio')
       _build_dd_matrix_radio(dd_id)
+    elsif design_detail.field_type.include?('matrix_checkbox')
+      _build_dd_matrix_checkbox(dd_id)
     elsif design_detail.field_type.include?('matrix_select')
       _build_dd_matrix_select(dd_id)
-    else
+    else # select, radio, checkbox
       ## These are any questions that only have 1 column for answer options
       ## Single choice radio button questions (radio), drop-down (select) and
       ## single column multiple choice (aka. checkbox) fall under this category
@@ -180,16 +234,23 @@ class MyStudy  #{{{1
     end
   end
 
-  def _build_dd_text(dd_id)  #{{{2
-    dddp = DesignDetailDataPoint.find_by_design_detail_field_id_and_study_id_and_extraction_form_id(dd_id, @study_id, @ef_id)
+  def _build_text_row(section, section_detail_id, arm_id, outcome_id)  #{{{2
+    #dddp = "#{section}DataPoint".constantize.find_by_design_detail_field_id_and_study_id_and_extraction_form_id(dd_id, @study_id, @ef_id)
+    dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { :"#{section.underscore}_field_id" => section_detail_id,
+                                                                           :study_id                         => @study_id,
+                                                                           :extraction_form_id               => @ef_id,
+                                                                           :arm_id                           => arm_id,
+                                                                           :outcome_id                       => outcome_id })
 
     if dddp.blank?
-      dddp = DesignDetailDataPoint.new(design_detail_field_id: dd_id,
-                                       study_id: @study_id,
-                                       extraction_form_id: @ef_id)
+      dddp = "#{section}DataPoint".constantize.new(:"#{section.underscore}_field_id" => section_detail_id,
+                                                   :study_id                         => @study_id,
+                                                   :extraction_form_id               => @ef_id,
+                                                   :arm_id                           => arm_id,
+                                                   :outcome_id                       => outcome_id)
     end
 
-    _print_dd_csv(dd_id, dddp)
+    _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
   end
 
   def _build_dd_matrix_checkbox(dd_id)  #{{{2
@@ -215,6 +276,126 @@ class MyStudy  #{{{1
 
     ## find_dddp_matrix_radio also takes care of printing the csv line
     find_dddp_matrix_radio(dd_id, ddf_rows, ddf_cols)
+  end
+
+  def _build_matrix_select(section, section_detail_id, arm_id, outcome_id)  #{{{2
+    ## This cannot return nil (I think)
+    section_field_rows = "#{section}Field".constantize.find(:all, :conditions => { "#{section.underscore}_id".to_sym => section_detail_id,
+                                                                                   :column_number                    => 0 })
+    section_field_cols = "#{section}Field".constantize.find(:all, :conditions => { "#{section.underscore}_id".to_sym => section_detail_id,
+                                                                                   :row_number                       => 0 })
+
+    ## find_dp_matrix_radio also takes care of printing the csv line
+    find_dp_matrix_select(section=section, section_detail_id=section_detail_id, rows=section_field_rows, cols=section_field_cols, arm_id=arm_id, outcome_id=outcome_id)
+  end
+
+  def _build_matrix_radio(section, section_detail_id, arm_id, outcome_id)  #{{{2
+    ## This cannot return nil (I think)
+    section_field_rows = "#{section}Field".constantize.find(:all, :conditions => { "#{section.underscore}_id".to_sym => section_detail_id,
+                                                                                   :column_number                    => 0 })
+    section_field_cols = "#{section}Field".constantize.find(:all, :conditions => { "#{section.underscore}_id".to_sym => section_detail_id,
+                                                                                   :row_number                       => 0 })
+
+    ## find_dp_matrix_radio also takes care of printing the csv line
+    find_dp_matrix_radio(section=section, section_detail_id=section_detail_id, rows=section_field_rows, cols=section_field_cols, arm_id=arm_id, outcome_id=outcome_id)
+  end
+
+  def find_dp_matrix_select(section, section_detail_id, rows, cols, arm_id, outcome_id)  #{{{2
+    rows.each do |row|
+      if row.row_number == -1
+        dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                               :study_id                               => @study_id,
+                                                                               :extraction_form_id                     => @ef_id,
+                                                                               :arm_id                                 => arm_id,
+                                                                               :outcome_id                             => outcome_id,
+                                                                               :row_field_id                           => row.id })
+        if dddp.blank?
+          dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                           :study_id                               => @study_id,
+                                           :extraction_form_id                     => @ef_id,
+                                           :row_field_id                           => row.id,
+                                           :column_field_id                        => 0,
+                                           :arm_id                                 => arm_id,
+                                           :outcome_id                             => outcome_id)
+        end
+  
+        _print_csv_line(section, section_detail_id, dddp)
+      else
+        cols.each do |col|
+          listOf_dropdown_options = _find_lof_matrix_select_dropdown_options(section, row.id, col.id)
+          dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                                 :study_id                               => @study_id,
+                                                                                 :extraction_form_id                     => @ef_id,
+                                                                                 :arm_id                                 => arm_id,
+                                                                                 :outcome_id                             => outcome_id,
+                                                                                 :row_field_id                           => row.id,
+                                                                                 :column_field_id                        => col.id })
+          if dddp.blank?
+            dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                             :study_id                               => @study_id,
+                                             :extraction_form_id                     => @ef_id,
+                                             :row_field_id                           => row.id,
+                                             :column_field_id                        => col.id,
+                                             :arm_id                                 => arm_id,
+                                             :outcome_id                             => outcome_id)
+          end
+  
+          _print_csv_line(section, section_detail_id, dddp)
+        end
+      end
+    end
+  end
+
+  def find_dp_matrix_radio(section, section_detail_id, rows, cols, arm_id, outcome_id)  #{{{2
+    rows.each do |row|
+      if row.row_number == -1
+        dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                               :study_id                               => @study_id,
+                                                                               :extraction_form_id                     => @ef_id,
+                                                                               :arm_id                                 => arm_id,
+                                                                               :outcome_id                             => outcome_id,
+                                                                               :row_field_id                           => row.id })
+        if dddp.blank?
+          dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                       :study_id                               => @study_id,
+                                                       :extraction_form_id                     => @ef_id,
+                                                       :row_field_id                           => row.id,
+                                                       :column_field_id                        => 0,
+                                                       :arm_id                                 => arm_id,
+                                                       :outcome_id                             => outcome_id)
+        end
+  
+        _print_csv_line(section, section_detail_id, dddp)
+      else
+        # Flag to see if there was any choice found for this row
+        any_choice_found = false
+
+        cols.each do |col|
+          dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                                 :value                                  => col.option_text,
+                                                                                 :study_id                               => @study_id,
+                                                                                 :extraction_form_id                     => @ef_id,
+                                                                                 :row_field_id                           => row.id,
+                                                                                 :arm_id                                 => arm_id,
+                                                                                 :outcome_id                             => outcome_id })
+          unless dddp.blank?
+            any_choice_found = true
+            _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
+          end
+        end
+
+        if any_choice_found == false
+          dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                       :study_id                               => @study_id,
+                                                       :extraction_form_id                     => @ef_id,
+                                                       :row_field_id                           => row.id,
+                                                       :column_field_id                        => 0,
+                                                       :arm_id                                 => arm_id,
+                                                       :outcome_id                             => outcome_id)
+          _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
+        end
+      end
+    end
   end
 
   def _build_dd_one_column(dd_id)  #{{{2
@@ -377,7 +558,7 @@ class MyStudy  #{{{1
     end
   end
 
-  def _find_lof_matrix_select_dropdown_options(section, row_id, column_id)
+  def _find_lof_matrix_select_dropdown_options(section, row_id, column_id)  #{{{2
     return MatrixDropdownOption.find(:all, :conditions => { row_id:     row_id,
                                                             column_id:  column_id,
                                                             model_name: "#{section}".underscore })
@@ -463,7 +644,63 @@ class MyStudy  #{{{1
              ",#{dddp.column_field_id}"\
              ",\"#{_escape_text(col_text)}\""\
              ",#{dddp.arm_id}"\
-             ",#{dddp.outcome_id}"
+             ","\
+             ",#{dddp.outcome_id}"\
+             ","
+
+    output = "#{common_info}#{output}"
+    puts output
+  end
+
+  def _print_csv_line(section, dd_id, dddp)  #{{{2
+    begin
+      row_text = "#{section}Field".constantize.find(dddp.row_field_id).option_text
+    rescue
+      row_text = ""
+    ensure
+    end
+
+    begin
+      col_text = "#{section}Field".constantize.find(dddp.column_field_id).option_text
+    rescue
+      col_text = ""
+    ensure
+    end
+
+    begin
+      arm_title = Arm.find(dddp.arm_id).title
+    rescue
+      arm_title = ""
+    ensure
+    end
+
+    begin
+      outcome_title = Outcome.find(dddp.outcome_id).title
+    rescue
+      outcome_title = ""
+    ensure
+    end
+
+    section_field_id_name = "#{section.underscore}_field_id"
+
+    output = ",#{section}"\
+             ",\"#{_escape_text("#{section}".constantize.find(dd_id).field_type)}\""\
+             ",#{dddp.id}"\
+             ",#{dddp.instance_eval(section_field_id_name)}"\
+             ",\"#{_escape_text("#{section}".constantize.find(dd_id).question)}\""\
+             ",\"#{_escape_text(dddp.value)}\""\
+             ",\"#{_escape_text(dddp.notes)}\""\
+             ",#{dddp.study_id}"\
+             ",#{dddp.extraction_form_id}"\
+             ",\"#{_escape_text(dddp.subquestion_value)}\""\
+             ",#{dddp.row_field_id}"\
+             ",\"#{_escape_text(row_text)}\""\
+             ",#{dddp.column_field_id}"\
+             ",\"#{_escape_text(col_text)}\""\
+             ",#{dddp.arm_id}"\
+             ",\"#{_escape_text(arm_title)}\""\
+             ",#{dddp.outcome_id}"\
+             ",\"#{_escape_text(outcome_title)}\""
 
     output = "#{common_info}#{output}"
     puts output
