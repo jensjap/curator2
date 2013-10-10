@@ -61,6 +61,8 @@ class MyStudy  #{{{1
         section_detail_info(arm_id=arm_id, outcome_id=0, section_detail_id=bc_id, section="BaselineCharacteristic")
       end
     end
+    # Don't need '0' arm any more
+    listOfarmIDs.delete 0
 
     ## OUTCOMES SECTION
     ###################
@@ -70,7 +72,7 @@ class MyStudy  #{{{1
     end
 
     ## OUTCOME DETAILS SECTION
-    #######################
+    ##########################
     listOfoutcomeIDs = get_listOfOutcomeIDs(@study_id)
     listOfoutcomeIDs.each do |outcome_id|
       listOfOutcomeDetailIDs = return_lof_section_detail_IDs(section="OutcomeDetail")
@@ -79,6 +81,70 @@ class MyStudy  #{{{1
       end
     end
 
+#    ## RESULTS
+#    ##########
+#    lof_outcome_IDs.each do |outcome_id|
+#      lof_subgroup_ids = _get_lof_subgroup_ids(outcome_id)
+#      lof_subgroup_ids.each do |subgroup_id|
+#        lof_timepoint_ids = _get_lof_timepoint_ids(outcome_id)
+#        lof_timepoint_ids.each do |timepoint_id|
+#          listOfarmIDs.each do |arm_id|
+#            outcome_data_entry = _get_outcome_data_entry(outcome_id=outcome_id,
+#                                         timepoint_id=timepoint_id,
+#                                         subgroup_id=subgroup_id)
+#            lof_outcome_measure_ids = _get_outcome_measure_ids(outcome_data_entry_id=outcome_data_entry.id)
+#            lof_outcome_measure_ids.each do |outcome_measure_id|
+#              p outcome_measure_id
+#              gets
+#              #!!!
+#              #_print_results_line(section="
+#            end
+#          end
+#        end
+#      end
+#    end
+  end
+
+  def _get_outcome_measures_ids(outcome_data_entry_id)  #{{{2
+    outcome_measure_ids = Array.new
+
+    outcome_measures = OutcomeMeasure.find(:all, :conditions => { :outcome_data_entry_id => outcome_data_entry_id })
+    outcome_measures.each do |o|
+      outcome_measure_ids.push o.id
+    end
+
+    return outcome_measure_ids
+  end
+
+  def _get_outcome_data_entry(outcome_id=outcome_id, timepoint_id=timepoint_id, subgroup_id=subgroup_id)  #{{{2
+    outcome_data_entry = OutcomeDataEntry.find(:first, :conditions => { :outcome_id         => outcome_id,
+                                                                        :extraction_form_id => @ef_id,
+                                                                        :timepoint_id       => timepoint_id,
+                                                                        :study_id           => @study_id,
+                                                                        :subgroup_id        => subgroup_id })
+    return outcome_data_entry
+  end
+
+  def _get_lof_timepoint_ids(outcome_id)  #{{{2
+    timepoint_ids = Array.new
+
+    timepoints = OutcomeTimepoint.find(:all, :conditions => { :outcome_id => outcome_id })
+    timepoints.each do |t|
+      timepoint_ids.push t.id
+    end
+
+    return timepoint_ids
+  end
+
+  def _get_lof_subgroup_ids(outcome_id)  #{{{2
+    subgroup_ids = Array.new
+
+    subgroups = OutcomeSubgroup.find(:all, :conditions => { :outcome_id => outcome_id })
+    subgroups.each do |s|
+      subgroup_ids.push s.id
+    end
+
+    return subgroup_ids
   end
 
   def get_listOfkqIDs  #{{{2
@@ -123,11 +189,12 @@ class MyStudy  #{{{1
     when /matrix_radio/
       _build_matrix_radio(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
     when /matrix_checkbox/
+      #!!!
       #puts "Found a #{section_detail.field_type} question in the #{section} section"
     when /matrix_select/
       _build_matrix_select(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
     else # select, radio, checkbox
-      #puts "Found a #{section_detail.field_type} question in the #{section} section"
+      _build_one_column(section=section, section_detail_id=section_detail_id, arm_id=arm_id, outcome_id=outcome_id)
     end
   end
 
@@ -136,16 +203,16 @@ class MyStudy  #{{{1
              "Arm,,,,,"\
              "\"#{_escape_text(Arm.find(arm_id).title)}\",,"\
              "#{@study_id},"\
-             "#{@ef_id}"
+             "#{@ef_id},,,,,,#{arm_id}"
     puts output
   end
 
   def outcome_info(outcome_id)  #{{{2
     output = ",,,,,,,,,,,,,,,,,"\
-             "Outcome,,,,,"\
+             "Outcome,\"#{_escape_text(Outcome.find(outcome_id).outcome_type)}\",,,,"\
              "\"#{_escape_text(Outcome.find(outcome_id).title)}\",,"\
              "#{@study_id},"\
-             "#{@ef_id}"
+             "#{@ef_id},,,,,,,,#{outcome_id}"
     puts output
   end
 
@@ -236,18 +303,18 @@ class MyStudy  #{{{1
 
   def _build_text_row(section, section_detail_id, arm_id, outcome_id)  #{{{2
     #dddp = "#{section}DataPoint".constantize.find_by_design_detail_field_id_and_study_id_and_extraction_form_id(dd_id, @study_id, @ef_id)
-    dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { :"#{section.underscore}_field_id" => section_detail_id,
-                                                                           :study_id                         => @study_id,
-                                                                           :extraction_form_id               => @ef_id,
-                                                                           :arm_id                           => arm_id,
-                                                                           :outcome_id                       => outcome_id })
+    dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                           :study_id                               => @study_id,
+                                                                           :extraction_form_id                     => @ef_id,
+                                                                           :arm_id                                 => arm_id,
+                                                                           :outcome_id                             => outcome_id })
 
     if dddp.blank?
-      dddp = "#{section}DataPoint".constantize.new(:"#{section.underscore}_field_id" => section_detail_id,
-                                                   :study_id                         => @study_id,
-                                                   :extraction_form_id               => @ef_id,
-                                                   :arm_id                           => arm_id,
-                                                   :outcome_id                       => outcome_id)
+      dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                   :study_id                               => @study_id,
+                                                   :extraction_form_id                     => @ef_id,
+                                                   :arm_id                                 => arm_id,
+                                                   :outcome_id                             => outcome_id)
     end
 
     _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
@@ -398,6 +465,36 @@ class MyStudy  #{{{1
     end
   end
 
+  def _build_one_column(section, section_detail_id, arm_id, outcome_id)  #{{{2
+    ## This cannot return nil (I think)
+    section_fields = "#{section}Field".constantize.find(:all, :conditions => { "#{section.underscore}_id".to_sym => section_detail_id })
+
+    field_type = "#{section}".constantize.find(section_detail_id).field_type
+
+    if field_type == "checkbox"
+      section_fields.each do |d|
+        dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                                               :value                                  => d.option_text,
+                                                                               :study_id                               => @study_id,
+                                                                               :extraction_form_id                     => @ef_id })
+        if dddp.blank?
+          dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => section_detail_id,
+                                                       study_id: @study_id,
+                                                       extraction_form_id: @ef_id,
+                                                       row_field_id: 0,
+                                                       column_field_id: 0,
+                                                       arm_id: arm_id,
+                                                       outcome_id: outcome_id)
+        end
+        _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
+      end
+
+    else
+      dddp = find_datapoint(section=section, dd_id=section_detail_id, section_fields=section_fields, arm_id=arm_id, outcome_id=outcome_id)
+      _print_csv_line(section=section, dd_id=section_detail_id, dddp=dddp)
+    end
+  end
+
   def _build_dd_one_column(dd_id)  #{{{2
     ## This cannot return nil (I think)
     ddf = DesignDetailField.find_all_by_design_detail_id(dd_id)
@@ -447,6 +544,28 @@ class MyStudy  #{{{1
                                      column_field_id: 0,
                                      arm_id: 0,
                                      outcome_id: 0)
+    return dddp
+  end
+
+  def find_datapoint(section, dd_id, section_fields, arm_id, outcome_id)  #{{{2
+    section_fields.each do |d|
+      dddp = "#{section}DataPoint".constantize.find(:first, :conditions => { "#{section.underscore}_field_id".to_sym => dd_id,
+                                                                             :study_id                               => @study_id,
+                                                                             :extraction_form_id                     => @ef_id,
+                                                                             :arm_id                                 => arm_id,
+                                                                             :outcome_id                             => outcome_id })
+      unless dddp.blank?
+        return dddp
+      end
+    end
+
+    dddp = "#{section}DataPoint".constantize.new("#{section.underscore}_field_id".to_sym => dd_id,
+                                                 :study_id                               => @study_id,
+                                                 :extraction_form_id                     => @ef_id,
+                                                 :row_field_id                           => 0,
+                                                 :column_field_id                        => 0,
+                                                 :arm_id                                 => arm_id,
+                                                 :outcome_id                             => outcome_id)
     return dddp
   end
 

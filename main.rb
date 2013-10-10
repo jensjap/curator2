@@ -1,6 +1,7 @@
 #encoding: utf-8
 
 require "rubyXL"
+require "csv"
 
 require "./lib/environment.rb"
 require "./lib/trollop.rb"
@@ -167,6 +168,8 @@ if __FILE__ == $0  # {{{1
       workerbee.process_arms
       workerbee.process_arm_details
       workerbee.process_baseline_characteristics
+      #workerbee.process_outcomes
+      #workerbee.process_outcome_details
     end
   end
 end
