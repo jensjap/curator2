@@ -52,13 +52,13 @@ class Importer  #{{{1
     @arm.each do |a|
       row_info = Hash.new
 
-      row_info[:section]     = a[17]  # R
-      row_info[:title]       = a[22]  # W
-      row_info[:description] = a[23]  # X
-      row_info[:study_id]    = a[24]  # Y
-      row_info[:ef_id]       = a[25]  # Z
-      row_info[:arm_id]      = a[31]  # AF
-      row_info[:outcome_id]  = a[33]  # AH
+      row_info[:section]     = a[17]       # R
+      row_info[:title]       = a[22]       # W
+      row_info[:description] = a[23]       # X
+      row_info[:study_id]    = a[24].to_i  # Y
+      row_info[:ef_id]       = a[25].to_i  # Z
+      row_info[:arm_id]      = a[31].to_i  # AF
+      row_info[:outcome_id]  = a[33].to_i  # AH
 
       _process_arm_for_study(row_info)
     end
@@ -68,14 +68,14 @@ class Importer  #{{{1
     @outcome.each do |o|
       row_info = Hash.new
 
-      row_info[:section]       = o[17]  # R
-      row_info[:type]          = o[18]  # R
-      row_info[:title]         = o[22]  # W
-      row_info[:description]   = o[23]  # X
-      row_info[:study_id]      = o[24]  # Y
-      row_info[:ef_id]         = o[25]  # Z
-      row_info[:arm_id]        = o[31]  # AF
-      row_info[:outcome_id]    = o[33]  # AH
+      row_info[:section]       = o[17]       # R
+      row_info[:type]          = o[18]       # R
+      row_info[:title]         = o[22]       # W
+      row_info[:description]   = o[23]       # X
+      row_info[:study_id]      = o[24].to_i  # Y
+      row_info[:ef_id]         = o[25].to_i  # Z
+      row_info[:arm_id]        = o[31].to_i  # AF
+      row_info[:outcome_id]    = o[33].to_i  # AH
 
       _process_outcome_for_study(row_info)
     end
@@ -165,20 +165,20 @@ class Importer  #{{{1
     @designDetails.each do |r|
       row_info = Hash.new
 
-      row_info[:ef_id]              = r[1]
-      row_info[:study_id]           = r[3]
+      row_info[:ef_id]              = r[1].to_i
+      row_info[:study_id]           = r[3].to_i
       row_info[:section]            = r[17]
       row_info[:type]               = r[18]
-      row_info[:datapoint_ID]       = r[19]
-      row_info[:dd_id]              = r[20]
+      row_info[:datapoint_ID]       = r[19].to_i
+      row_info[:dd_id]              = r[20].to_i
       row_info[:datapoint_value]    = r[22]
       row_info[:notes]              = r[23]
       row_info[:subquestion_value]  = r[26]
-      row_info[:row_field_id]       = r[27]
-      row_info[:column_field_id]    = r[29]
-      row_info[:arm_id]             = r[31]
+      row_info[:row_field_id]       = r[27].to_i
+      row_info[:column_field_id]    = r[29].to_i
+      row_info[:arm_id]             = r[31].to_i
       row_info[:arm_title]          = r[32]
-      row_info[:outcome_id]         = r[33]
+      row_info[:outcome_id]         = r[33].to_i
       row_info[:outcome_title]      = r[34]
 
       insert_db(section="DesignDetail", info=row_info)
@@ -189,20 +189,20 @@ class Importer  #{{{1
     @armDetails.each do |a|
       row_info = Hash.new
 
-      row_info[:ef_id]              = a[1]
-      row_info[:study_id]           = a[3]
+      row_info[:ef_id]              = a[1].to_i
+      row_info[:study_id]           = a[3].to_i
       row_info[:section]            = a[17]
       row_info[:type]               = a[18]
-      row_info[:datapoint_ID]       = a[19]
-      row_info[:dd_id]              = a[20]
+      row_info[:datapoint_ID]       = a[19].to_i
+      row_info[:dd_id]              = a[20].to_i
       row_info[:datapoint_value]    = a[22]
       row_info[:notes]              = a[23]
       row_info[:subquestion_value]  = a[26]
-      row_info[:row_field_id]       = a[27]
-      row_info[:column_field_id]    = a[29]
-      row_info[:arm_id]             = a[31]
+      row_info[:row_field_id]       = a[27].to_i
+      row_info[:column_field_id]    = a[29].to_i
+      row_info[:arm_id]             = a[31].to_i
       row_info[:arm_title]          = a[32]
-      row_info[:outcome_id]         = a[33]
+      row_info[:outcome_id]         = a[33].to_i
       row_info[:outcome_title]      = a[34]
 
       insert_db(section="ArmDetail", info=row_info)
@@ -213,20 +213,20 @@ class Importer  #{{{1
     @baselineCharacteristics.each do |b|
       row_info = Hash.new
 
-      row_info[:ef_id]              = b[1]
-      row_info[:study_id]           = b[3]
+      row_info[:ef_id]              = b[1].to_i
+      row_info[:study_id]           = b[3].to_i
       row_info[:section]            = b[17]
       row_info[:type]               = b[18]
-      row_info[:datapoint_ID]       = b[19]
-      row_info[:dd_id]              = b[20]
+      row_info[:datapoint_ID]       = b[19].to_i
+      row_info[:dd_id]              = b[20].to_i
       row_info[:datapoint_value]    = b[22]
       row_info[:notes]              = b[23]
       row_info[:subquestion_value]  = b[26]
-      row_info[:row_field_id]       = b[27]
-      row_info[:column_field_id]    = b[29]
-      row_info[:arm_id]             = b[31]
+      row_info[:row_field_id]       = b[27].to_i
+      row_info[:column_field_id]    = b[29].to_i
+      row_info[:arm_id]             = b[31].to_i
       row_info[:arm_title]          = b[32]
-      row_info[:outcome_id]         = b[33]
+      row_info[:outcome_id]         = b[33].to_i
       row_info[:outcome_title]      = b[34]
 
       insert_db(section="BaselineCharacteristic", info=row_info)
@@ -237,20 +237,20 @@ class Importer  #{{{1
     @outcomeDetails.each do |o|
       row_info = Hash.new
 
-      row_info[:ef_id]              = o[1]
-      row_info[:study_id]           = o[3]
+      row_info[:ef_id]              = o[1].to_i
+      row_info[:study_id]           = o[3].to_i
       row_info[:section]            = o[17]
       row_info[:type]               = o[18]
-      row_info[:datapoint_ID]       = o[19]
-      row_info[:dd_id]              = o[20]
+      row_info[:datapoint_ID]       = o[19].to_i
+      row_info[:dd_id]              = o[20].to_i
       row_info[:datapoint_value]    = o[22]
       row_info[:notes]              = o[23]
       row_info[:subquestion_value]  = o[26]
-      row_info[:row_field_id]       = o[27]
-      row_info[:column_field_id]    = o[29]
-      row_info[:arm_id]             = o[31]
+      row_info[:row_field_id]       = o[27].to_i
+      row_info[:column_field_id]    = o[29].to_i
+      row_info[:arm_id]             = o[31].to_i
       row_info[:arm_title]          = o[32]
-      row_info[:outcome_id]         = o[33]
+      row_info[:outcome_id]         = o[33].to_i
       row_info[:outcome_title]      = o[34]
 
       insert_db(section="outcomeDetail", info=row_info)
@@ -258,14 +258,44 @@ class Importer  #{{{1
   end
 
   def insert_db(section, info)  #{{{2
-    params = {:section_detail_id      => info[:dd_id],
-              :value                  => "%#{info[:datapoint_value]}%",
-              :study_id               => info[:study_id],
-              :extraction_form_id     => info[:ef_id],
-              :row_field_id           => info[:row_field_id],
-              :column_field_id        => info[:column_field_id],
-              :arm_id                 => info[:arm_id],
-              :outcome_id             => info[:outcome_id]}
+#    # Checkboxes have to be dealt with differently because
+#    # they allow for more than 1 answer
+#    if info[:type].include? "checkbox"
+#      puts "Found a checkbox for: #{info.inspect}"
+#    else
+#      params = {:section_detail_id      => info[:dd_id],
+#                :value                  => "%#{info[:datapoint_value]}%",
+#                :study_id               => info[:study_id],
+#                :extraction_form_id     => info[:ef_id],
+#                :row_field_id           => info[:row_field_id],
+#                :column_field_id        => info[:column_field_id],
+#                :arm_id                 => info[:arm_id],
+#                :outcome_id             => info[:outcome_id]}
+#  
+#      lof_datapoints = "#{info[:section]}DataPoint".constantize.find(:all, :conditions => ["#{info[:section].underscore}_field_id=:section_detail_id AND study_id=:study_id AND extraction_form_id=:extraction_form_id AND row_field_id=:row_field_id AND column_field_id=:column_field_id AND arm_id=:arm_id AND outcome_id=:outcome_id", params])
+#      if lof_datapoints.length == 0
+#        dp = "#{info[:section]}DataPoint".constantize.create("#{info[:section].underscore}_field_id".to_sym => info[:dd_id],
+#                                                             :value                 => info[:datapoint_value],
+#                                                             :notes                 => info[:notes],
+#                                                             :study_id              => info[:study_id],
+#                                                             :extraction_form_id    => info[:ef_id],
+#                                                             :subquestion_value     => info[:subquestion_value],
+#                                                             :row_field_id          => info[:row_field_id],
+#                                                             :column_field_id       => info[:column_field_id],
+#                                                             :arm_id                => info[:arm_id],
+#                                                             :outcome_id            => info[:outcome_id])
+#      elsif lof_datapoints.length == 1
+#        dp = lof_datapoints[0]
+#        dp.send("#{info[:section].underscore}_field_id=", info[:dd_id])
+#        dp.value                                = info[:datapoint_value]
+#        dp.subquestion_value                    = info[:subquestion_value]
+#        dp.notes                                = info[:notes]
+#        dp.save
+#      else
+#        puts "PROBLEM. Attempted to find 1 unique datapoint for #{info}, but got more than 1 record"
+#        gets
+#      end
+#    end
 
     if info[:datapoint_ID].blank?
       unless info[:datapoint_value].blank?

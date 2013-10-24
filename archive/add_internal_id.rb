@@ -20,7 +20,11 @@ def main
       ppn = _find_primary_publication_number_record_by_primary_publication_id(pp_id)
       ppn.number = refid
       ppn.number_type = "internal"
-      ppn.save
+      if ppn.save
+        puts "#{ppn} created successfully"
+      else
+        puts "Failed to created #{ppn}"
+      end
     else
       puts "Too many results found for pmid: #{pmid}"
     end
@@ -28,7 +32,13 @@ def main
 end
 
 def _find_primary_publication_number_record_by_primary_publication_id(pp_id)
-  PrimaryPublicationNumber.find_by_primary_publication_id(pp_id)
+  ppn = PrimaryPublicationNumber.find_by_primary_publication_id(pp_id)
+  if ppn.blank?
+    ppn = PrimaryPublicationNumber.new(:primary_publication_id => pp_id)
+    puts "Primary Publication Number record not found."
+    puts "Created a new one for pp_id (#{pp_id}): #{ppn.inspect}"
+  end
+  return ppn
 end
 
 def _find_lof_primary_publications_with_pmid(project_id, pmid)
